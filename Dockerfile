@@ -14,8 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 
-RUN apt install -y libgl1-mesa-glx
-
+RUN apt install libgl1
 RUN pip install --no-cache-dir fastapi
 
 # Install Python dependencies
