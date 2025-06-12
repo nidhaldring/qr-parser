@@ -23,6 +23,9 @@ RUN pip install --no-cache-dir fastapi
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+
+RUN pip install zbar
+
 # Copy the application code
 COPY . .
 
