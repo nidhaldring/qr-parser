@@ -27,7 +27,7 @@ class ParseQrResult(TypedDict):
     address: str
 
 @app.post('/qr')
-async def parse_qr(file: UploadFile) -> ParseQrResult:
+async def parse_qr(file: UploadFile):
     contents = np.array(Image.open(BytesIO( await file.read())))
     vcard = str(qreader.detect_and_decode(image=contents))
 
