@@ -33,7 +33,6 @@ async def parse_qr(file: UploadFile) -> ParseQrResult:
 
     resp = vcard_to_json(vcard)
     json_result = str(resp.choices[0].message.content)[7:-3]
-    print(json_result)
     result = json.loads(json_result)
 
     return result
