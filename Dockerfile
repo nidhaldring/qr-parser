@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     libgl1-mesa-glx \
     libglib2.0-0 \
+    libzbar0 \
     && rm -rf /var/lib/apt/lists/*
 
 
@@ -24,9 +25,6 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 
-RUN apt-get install zbar-tools -y
-RUN apt-get install libzbar-dev -y
-RUN pip install zbar
 
 # Copy the application code
 COPY . .
