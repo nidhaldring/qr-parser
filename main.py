@@ -54,6 +54,7 @@ def vcard_to_json(s: str):
         Note: Only include the json without anything else!
 
         If any field is missing, set its value to empty string. Here's the vCard content: 
+        Phone should include +then country code then number. without  () or -.
         {s}
     """
 
