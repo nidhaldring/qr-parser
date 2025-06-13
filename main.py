@@ -11,13 +11,11 @@ from qreader import QReader
 from mistralai import Mistral
 
 
-
-api_key = os.environ["MISTRAL_API_KEY"] 
+api_key = os.environ["MISTRAL_API_KEY"]
 
 app = FastAPI()
 qreader = QReader()
 mistral_client = Mistral(api_key=api_key)
-
 
 
 class ParseQrResult(TypedDict):
@@ -26,17 +24,22 @@ class ParseQrResult(TypedDict):
     phone: str
     address: str
 
-@app.post('/qr')
+
+@app.post("/qr")
 async def parse_qr(file: UploadFile):
-    contents = np.array(Image.open(BytesIO( await file.read())).convert("RGB"))
+    contents = np.array(Image.open(BytesIO(await file.read())).convert("RGB"))
     vcard = str(qreader.detect_and_decode(image=contents))
 
-    resp = vcard_to_json(vcard)
-    json_result = str(resp.choices[0].message.content)[7:-3]
-    result = json.loads(json_result)
+    try:
+        resp = vcard_to_json(vcard)
+        json_result = str(resp.choices[0].message.content)[7:-3]
+        result = json.loads(json_result)
 
-    print(result)
-    return result
+        print(result)
+        return result
+
+    except:
+        return {"fullName": "", "email": "", "phone": "", "address": ""}
 
 
 def vcard_to_json(s: str):
@@ -55,19 +58,18 @@ def vcard_to_json(s: str):
 
         If any field is missing, set its value to empty string. Here's the vCard content: 
         Phone should include +then country code then number. without  () or -.
+        Make sure email is lowercase
         {s}
     """
 
-
     chat_response = mistral_client.chat.complete(
-        model = "mistral-large-latest",
-        messages = [
+        model="mistral-large-latest",
+        messages=[
             {
                 "role": "user",
                 "content": parsing_prompt,
             },
-        ]
+        ],
     )
 
     return chat_response
-
