@@ -28,13 +28,14 @@ class ParseQrResult(TypedDict):
 
 @app.post('/qr')
 async def parse_qr(file: UploadFile):
-    contents = np.array(Image.open(BytesIO( await file.read())))
+    contents = np.array(Image.open(BytesIO( await file.read())).convert("RGB"))
     vcard = str(qreader.detect_and_decode(image=contents))
 
     resp = vcard_to_json(vcard)
     json_result = str(resp.choices[0].message.content)[7:-3]
     result = json.loads(json_result)
 
+    print(result)
     return result
 
 
