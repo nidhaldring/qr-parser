@@ -40,6 +40,7 @@ async def parse_qr(file: UploadFile) -> ParseQrResult:
 
 def vcard_to_json(s: str):
     parsing_prompt = f"""
+        YOUR MISSION:
         You are a data parser. Convert the following vCard text content into a JSON object. The JSON should include only these fields:
 
         fullName: the contact's full name
@@ -52,7 +53,7 @@ def vcard_to_json(s: str):
 
         Note: Only include the json without anything else!
 
-        If any field is missing, set its value to empty string. Here's the vCard content: 
+        IMPORTANT: do not infer any values. If a field is not present in the vCard, set its value to empty string.
         {s}
     """
 
