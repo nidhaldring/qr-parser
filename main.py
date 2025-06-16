@@ -9,7 +9,7 @@ from fastapi import FastAPI, UploadFile
 from qreader import QReader
 
 from mistralai import Mistral
-from typing import Optional 
+from typing import Optional
 
 
 api_key = os.environ["MISTRAL_API_KEY"]
@@ -33,7 +33,7 @@ async def parse_qr(file: UploadFile):
 
     try:
         resp = vcard_to_json(vcard)
-        json_result = str(resp.choices[0].message.content)[7:-3]
+        json_result = str(resp.choices[0].message.content)[7:-3]  # ``json {} bb``
         result = json.loads(json_result)
 
         print(result)
@@ -41,6 +41,7 @@ async def parse_qr(file: UploadFile):
 
     except:
         return {"fullName": "", "email": "", "phone": "", "address": ""}
+
 
 @app.get("/search-web")
 async def search_web(
@@ -75,7 +76,6 @@ async def search_web(
             Only include data from reliable and publicly accessible sources.
         """
 
-    
     websearch_agent = mistral_client.beta.agents.create(
         model="mistral-medium-2505",
         description="Agent able to search information over the web, such as social media, news, and company profiles.",
@@ -85,15 +85,18 @@ async def search_web(
         completion_args={
             "temperature": 0.3,
             "top_p": 0.95,
-        }
+        },
     )
 
-    
-    result = websearch_agent.run(query_prompt)
+    result = mistral_client.beta.conversations.start(
+        agent_id=websearch_agent.id, inputs=query_prompt
+    )
 
-    return {
-        "result": result.output  
-    }
+    # result = client.start(query_prompt)
+
+    return {"result": result.outputs}
+
+
 def vcard_to_json(s: str):
     parsing_prompt = f"""
         YOUR MISSION:
