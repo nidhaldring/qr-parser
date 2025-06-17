@@ -37,18 +37,16 @@ async def parse_qr(file: UploadFile):
             raise Exception("vcard empty")
 
         vcard = str(vcard_tuple[0])
-
-        parsed_vcard = parse_vcard(vcard)
+        parsed_vcard = parse_vcard(vcard) if len(vcard_tuple) == 1 else None
         if parsed_vcard:
             return parsed_vcard
-
 
         print("Parsing manually failed !")
         print("Got vcard ", vcard)
         print("Will try Ai now")
 
         # else try with ai
-        resp = vcard_to_json(vcard)
+        resp = vcard_to_json(str(vcard_tuple))
         json_result = str(resp.choices[0].message.content)[7:-3]
         result = json.loads(json_result)
 
@@ -90,6 +88,7 @@ def parse_vcard(vcard: str):
 
     except:
         return None
+
 
 def vcard_to_json(s: str):
     parsing_prompt = f"""
