@@ -29,12 +29,14 @@ class ParseQrResult(TypedDict):
 @app.post("/qr")
 async def parse_qr(file: UploadFile):
     contents = np.array(Image.open(BytesIO(await file.read())).convert("RGB"))
-    vcard = str(qreader.detect_and_decode(image=contents)[0])
+    vcard_tuple = qreader.detect_and_decode(image=contents)
 
     try:
-        print(vcard)
-        if len(vcard) == 0:
+        print(vcard_tuple)
+        if len(vcard_tuple) == 0:
             raise Exception("vcard empty")
+
+        vcard = str(vcard_tuple[0])
 
         parsed_vcard = parse_vcard(vcard)
         if parsed_vcard:
@@ -46,7 +48,7 @@ async def parse_qr(file: UploadFile):
         print("Will try Ai now")
 
         # else try with ai
-        resp = vcard_to_json(str(vcard))
+        resp = vcard_to_json(vcard)
         json_result = str(resp.choices[0].message.content)[7:-3]
         result = json.loads(json_result)
 
