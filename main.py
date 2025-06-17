@@ -1,6 +1,7 @@
 import os
 import json
 import numpy as np
+import vobject
 
 from typing import TypedDict
 from PIL import Image
@@ -28,19 +29,65 @@ class ParseQrResult(TypedDict):
 @app.post("/qr")
 async def parse_qr(file: UploadFile):
     contents = np.array(Image.open(BytesIO(await file.read())).convert("RGB"))
-    vcard = str(qreader.detect_and_decode(image=contents))
+    vcard = str(qreader.detect_and_decode(image=contents)[0])
 
     try:
-        resp = vcard_to_json(vcard)
+        print(vcard)
+        if len(vcard) == 0:
+            raise Exception("vcard empty")
+
+        parsed_vcard = parse_vcard(vcard)
+        if parsed_vcard:
+            return parsed_vcard
+
+
+        print("Parsing manually failed !")
+        print("Got vcard ", vcard)
+        print("Will try Ai now")
+
+        # else try with ai
+        resp = vcard_to_json(str(vcard))
         json_result = str(resp.choices[0].message.content)[7:-3]
         result = json.loads(json_result)
 
-        print(result)
         return result
 
-    except:
+    except Exception as e:
+        print(e)
         return {"fullName": "", "email": "", "phone": "", "address": ""}
 
+
+def parse_vcard(vcard: str):
+    try:
+        v = vobject.base.readOne(vcard)
+
+        full_name = v.fn.value if hasattr(v, "fn") else None
+        email = v.email.value.lower() if hasattr(v, "email") else None
+        phone = v.tel.value.replace(" ", "") if hasattr(v, "tel") else None
+
+        address = v.adr.value if hasattr(v, "adr") else None
+        if address:
+            address_prts = [
+                address.street,
+                address.city,
+                address.region,
+                address.code,
+                address.country,
+            ]
+            address = ", ".join(filter(None, address_prts))
+
+        if not (full_name and email and phone and address):
+            return None
+
+        return {
+            "fullName": full_name,
+            "email": email,
+            "phone": phone,
+            "address": address,
+        }
+
+    except:
+        return None
 
 def vcard_to_json(s: str):
     parsing_prompt = f"""
@@ -57,7 +104,6 @@ def vcard_to_json(s: str):
 
         Note: Only include the json without anything else!
 
-        If any field is missing, set its value to empty string. Here's the vCard content: 
         Phone should include +then country code then number. without  () or -.
         Make sure email is lowercase
 
