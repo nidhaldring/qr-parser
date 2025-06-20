@@ -52,9 +52,9 @@ async def parse_qr(file: UploadFile):
 
         print("Ai result => ", result)
 
-        if result["fullName"].lower() == "john doe":
+        if result["fullName"].lower() in [ "john doe", "jane doe" ]:
             print(
-                "Got a jon doe will return empty object ",
+                "Got a jon/jane doe will return empty object ",
                 {"fullName": "", "email": "", "phone": "", "address": ""},
             )
             return {"fullName": "", "email": "", "phone": "", "address": ""}
