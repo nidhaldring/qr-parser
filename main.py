@@ -50,6 +50,15 @@ async def parse_qr(file: UploadFile):
         json_result = str(resp.choices[0].message.content)[7:-3]
         result = json.loads(json_result)
 
+        print("Ai result => ", result)
+
+        if result["fullName"].lower() == "john doe":
+            print(
+                "Got a jon doe will return empty object ",
+                {"fullName": "", "email": "", "phone": "", "address": ""},
+            )
+            return {"fullName": "", "email": "", "phone": "", "address": ""}
+
         return result
 
     except Exception as e:
